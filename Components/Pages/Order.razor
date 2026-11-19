@@ -1,0 +1,116 @@
+@page "/order/{PizzaId:int}"
+@rendermode InteractiveServer
+@inject PizzaCatalog Catalog
+@inject OrderState CurrentOrder
+@inject NavigationManager Navigation
+
+<PageTitle>Stel je pizza samen | Blazing Pizza</PageTitle>
+
+@if (_pizza is null)
+{
+    <section class="empty-state">
+        <div class="empty-icon">🍕</div>
+        <h1>Pizza niet gevonden</h1>
+        <p>Deze pizza staat niet op het menu.</p>
+        <a class="button button-primary" href="/">Terug naar menu</a>
+    </section>
+}
+else
+{
+    <section class="customize-layout">
+        <div class="customize-intro">
+            <a class="back-link" href="/">← Terug naar menu</a>
+            <span class="eyebrow">MAAK HEM VAN JOU</span>
+            <h1>Stel je <span>pizza</span> samen</h1>
+            <p>Kies je formaat en toppings. De prijs wordt direct bijgewerkt.</p>
+            <div class="customize-art"><span>@_pizza.Emoji</span></div>
+            <h2>@_pizza.Name</h2>
+            <p>@_pizza.Description</p>
+        </div>
+
+        <div class="customize-panel">
+            <h2>1. Kies je formaat</h2>
+            <div class="size-options">
+                @foreach (var size in Sizes)
+                {
+                    <label class="choice-card @( _selectedSize == size.Name ? "selected" : "")">
+                        <input type="radio" name="size" value="@size.Name" checked="@(_selectedSize == size.Name)" @onchange="() => _selectedSize = size.Name" />
+                        <span><strong>@size.Name</strong><small>@size.Description</small></span>
+                        <b>@(size.ExtraPrice == 0 ? "Standaard" : "+ " + CurrencyFormatter.Euro(size.ExtraPrice))</b>
+                    </label>
+                }
+            </div>
+
+            <h2>2. Kies je toppings</h2>
+            <div class="topping-list">
+                @foreach (var topping in _pizza.Toppings)
+                {
+                    <label class="topping-choice">
+                        <input type="checkbox" checked="@_selectedToppings.Contains(topping)" @onchange="args => ToggleTopping(topping, args.Value is bool selected && selected)" />
+                        <span>@topping</span>
+                        <small>Inbegrepen</small>
+                    </label>
+                }
+                <label class="topping-choice">
+                    <input type="checkbox" checked="@_extraCheese" @onchange="args => _extraCheese = args.Value is bool selected && selected" />
+                    <span>Extra kaas</span>
+                    <small>+ @CurrencyFormatter.Euro(1.00m)</small>
+                </label>
+            </div>
+
+            <div class="order-total">
+                <div><span>Totaal</span><strong>@CurrencyFormatter.Euro(Price)</strong></div>
+                <button class="button button-primary button-wide" @onclick="AddToOrder">Voeg toe aan bestelling <span aria-hidden="true">→</span></button>
+            </div>
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter] public int PizzaId { get; set; }
+
+    private PizzaSpecial? _pizza;
+    private string _selectedSize = "Medium";
+    private readonly HashSet<string> _selectedToppings = [];
+    private bool _extraCheese;
+
+    private static readonly (string Name, string Description, decimal ExtraPrice)[] Sizes =
+    [
+        ("Small", "25 cm", 0m),
+        ("Medium", "30 cm", 2.00m),
+        ("Large", "35 cm", 4.00m)
+    ];
+
+    private decimal Price
+    {
+        get
+        {
+            if (_pizza is null) return 0m;
+            var sizeExtra = Sizes.First(size => size.Name == _selectedSize).ExtraPrice;
+            return _pizza.BasePrice + sizeExtra + (_extraCheese ? 1.00m : 0m);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        _pizza = Catalog.FindById(PizzaId);
+        _selectedSize = "Medium";
+        _selectedToppings.Clear();
+        _extraCheese = false;
+    }
+
+    private void ToggleTopping(string topping, bool selected)
+    {
+        if (selected) _selectedToppings.Add(topping);
+        else _selectedToppings.Remove(topping);
+    }
+
+    private void AddToOrder()
+    {
+        if (_pizza is null) return;
+        var toppings = _selectedToppings.ToList();
+        if (_extraCheese) toppings.Add("Extra kaas");
+        CurrentOrder.Add(_pizza, _selectedSize, toppings, Price);
+        Navigation.NavigateTo("/order-summary");
+    }
+}

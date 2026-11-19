@@ -1,0 +1,64 @@
+@page "/order-summary"
+@rendermode InteractiveServer
+@inject OrderState CurrentOrder
+@inject NavigationManager Navigation
+
+<PageTitle>Mijn bestelling | Blazing Pizza</PageTitle>
+
+<section class="summary-page">
+    <a class="back-link" href="/">← Verder winkelen</a>
+    <span class="eyebrow">BIJNA GENIETEN</span>
+    <h1>Jouw bestelling</h1>
+    <p class="section-lead">Controleer je pizza's en het totaalbedrag.</p>
+
+    @if (CurrentOrder.Items.Count == 0)
+    {
+        <div class="empty-state order-empty">
+            <div class="empty-icon">🛒</div>
+            <h2>Je bestelling is nog leeg</h2>
+            <p>Kies een pizza uit ons menu om te beginnen.</p>
+            <a class="button button-primary" href="/">Bekijk de pizza's</a>
+        </div>
+    }
+    else
+    {
+        <div class="summary-card">
+            @foreach (var item in CurrentOrder.Items)
+            {
+                <div class="summary-item" @key="item.Id">
+                    <div class="summary-pizza-icon">🍕</div>
+                    <div class="summary-item-info">
+                        <strong>@item.PizzaName</strong>
+                        <span>@item.Size · @(item.Toppings.Length == 0 ? "Geen extra toppings" : string.Join(", ", item.Toppings))</span>
+                    </div>
+                    <strong class="price">@CurrencyFormatter.Euro(item.Price)</strong>
+                    <button class="remove-button" title="Verwijder pizza" @onclick="() => CurrentOrder.Remove(item.Id)">×</button>
+                </div>
+            }
+            <div class="summary-total">
+                <span>Totaalbedrag</span>
+                <strong>@CurrencyFormatter.Euro(CurrentOrder.Total)</strong>
+            </div>
+            <button class="button button-primary button-wide" @onclick="CompleteOrder">Bestelling afronden</button>
+        </div>
+    }
+</section>
+
+@if (_showConfirmation)
+{
+    <div class="confirmation-banner" role="status">
+        <strong>Bedankt voor je bestelling!</strong>
+        <span>Dit is een tutorialdemo; er is geen echte bestelling geplaatst.</span>
+        <button @onclick="() => _showConfirmation = false" aria-label="Sluiten">×</button>
+    </div>
+}
+
+@code {
+    private bool _showConfirmation;
+
+    private void CompleteOrder()
+    {
+        CurrentOrder.Clear();
+        _showConfirmation = true;
+    }
+}

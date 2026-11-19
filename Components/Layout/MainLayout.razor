@@ -1,0 +1,31 @@
+@inherits LayoutComponentBase
+
+<div class="app-shell">
+    <header class="topbar">
+        <a class="brand" href="/" aria-label="Blazing Pizza home">
+            <span class="brand-mark">🍕</span>
+            <span class="brand-copy">
+                <strong>Blazing Pizza</strong>
+                <small>Vers uit de oven, speciaal voor jou</small>
+            </span>
+        </a>
+
+        <nav class="main-nav" aria-label="Hoofdnavigatie">
+            <NavLink href="/" Match="NavLinkMatch.All">Menu</NavLink>
+            <NavLink href="/order-summary">Mijn bestelling</NavLink>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        @Body
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-brand"><span>🍕</span> Blazing Pizza</div>
+        <div class="footer-student">
+            <span>Gemaakt door: <strong>Jacob Eseoghene Agbamogun</strong></span>
+            <span>Land: <strong>Nederland (Netherlands)</strong></span>
+        </div>
+        <div class="footer-note">CSE 325 · W03 Blazor assignment</div>
+    </footer>
+</div>

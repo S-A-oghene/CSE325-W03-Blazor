@@ -1,0 +1,54 @@
+@page "/"
+@rendermode InteractiveServer
+@inject PizzaCatalog Catalog
+
+<PageTitle>Blazing Pizza | Pizzamenu</PageTitle>
+
+<section class="hero">
+    <div class="hero-copy">
+        <span class="eyebrow">VERS UIT DE OVEN</span>
+        <h1>Jouw favoriete pizza.<br /><span>Met liefde gebakken.</span></h1>
+        <p>Kies een klassieker of ontdek iets nieuws. Stel je pizza samen en wij doen de rest.</p>
+        <a class="button button-primary" href="#pizzas">Bekijk het menu <span aria-hidden="true">↓</span></a>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+        <div class="hero-circle">🍕</div>
+        <span class="hero-spark spark-one">✦</span>
+        <span class="hero-spark spark-two">✳</span>
+        <span class="hero-spark spark-three">✦</span>
+    </div>
+</section>
+
+<section class="menu-section" id="pizzas">
+    <div class="section-heading">
+        <div>
+            <span class="eyebrow">ONS MENU</span>
+            <h2>Verse pizza's, klaar om te kiezen</h2>
+            <p>Alle prijzen zijn weergegeven in euro's (€), de valuta van Nederland.</p>
+        </div>
+        <span class="menu-count">@Catalog.Pizzas.Count pizza's</span>
+    </div>
+
+    <div class="pizza-grid">
+        @foreach (var pizza in Catalog.Pizzas)
+        {
+            <article class="pizza-card" @key="pizza.Id">
+                <div class="pizza-art pizza-art-@pizza.Id" aria-hidden="true">
+                    <span>@pizza.Emoji</span>
+                    <small>🍃</small>
+                </div>
+                <div class="pizza-card-body">
+                    <div class="pizza-title-row">
+                        <h3>@pizza.Name</h3>
+                        <strong class="price">@CurrencyFormatter.Euro(pizza.BasePrice)</strong>
+                    </div>
+                    <p>@pizza.Description</p>
+                    <div class="pizza-card-bottom">
+                        <span class="tag">Vers bereid</span>
+                        <a class="button button-dark" href="/order/@pizza.Id">Kies pizza <span aria-hidden="true">→</span></a>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+</section>
